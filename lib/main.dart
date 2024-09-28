@@ -16,12 +16,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Plantipedia',
       theme: ThemeData(
-        primaryColor: const Color(0xFF3366CC), // Primary color
-        scaffoldBackgroundColor: const Color(0xFFF7F8FA), // Light background
+        primaryColor: const Color(0xFF4CAF50), // สีเขียวเข้ม
+        scaffoldBackgroundColor: const Color(0xFFF1F8E9), // สีพื้นหลังเขียวอ่อน
         appBarTheme: const AppBarTheme(
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          color: Color(0xFF3366CC), // Change app bar color
-          elevation: 2, // Slight shadow for app bar
+          color: Color(0xFF4CAF50), // สีเขียวเข้มสำหรับ AppBar
+          elevation: 0, // ไม่มีเงา ให้ดูโมเดิร์น
           iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
             color: Colors.white,
@@ -30,25 +30,28 @@ class MyApp extends StatelessWidget {
           ),
         ),
         textTheme: const TextTheme(
-          headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF202122)),
-          headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF202122)),
-          bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF202122)),
-          bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF202122)),
+          headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
+          headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
+          bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+          bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF666666)),
         ),
-        dividerTheme: const DividerThemeData(
-          color: Color(0xFFC8CCD1),
-          thickness: 1,
+        cardTheme: CardTheme(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3366CC),
+            backgroundColor: const Color(0xFF4CAF50),
             foregroundColor: Colors.white,
-            elevation: 5, // Add shadow to buttons
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12), // Rounded corners
-            ),
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
           ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
         ),
       ),
       home: const HomeScreen(),
