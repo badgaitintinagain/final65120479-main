@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:final65120479/backbone/database_helper.dart';
 import 'package:final65120479/backbone/model.dart';
@@ -128,8 +130,9 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                         itemBuilder: (context, index) {
                           final landUse = snapshot.data![index];
                           return ListTile(
-                            title: Text(landUse.landUseTypeName ?? 'Unknown'),
-                            subtitle: Text('Component: ${landUse.componentName}\nDescription: ${landUse.landUseDescription}'),
+                            leading: _buildImage(landUse.plantImage ?? ''), // Display image as icon
+                            title: Text(landUse.plantName ?? 'Unknown'),
+                            subtitle: Text('Land use: ${landUse.landUseTypeName}\nComponent: ${landUse.componentName}\nDescription: ${landUse.landUseDescription}'),
                             onTap: () {
                               // Navigate to plant details when tapped
                               Navigator.push(
@@ -151,6 +154,28 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildImage(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      return Image.asset(
+        imagePath,
+        height: 40, // Small icon size
+        width: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 40),
+      );
+    } else if (File(imagePath).existsSync()) {
+      return Image.file(
+        File(imagePath),
+        height: 40, // Small icon size
+        width: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 40),
+      );
+    } else {
+      return const Icon(Icons.image_not_supported, size: 40);
+    }
   }
 
   Future<void> _submitSearch() async {
