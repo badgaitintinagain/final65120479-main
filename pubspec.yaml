@@ -1,0 +1,37 @@
+name: final65120479
+description: "A modern Flutter project for plant information."
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.5.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  sqflite: ^2.3.2
+  path: ^1.8.0
+  image_picker: ^0.8.4+4
+  path_provider: ^2.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/plants/bamboo.jpg
+    - assets/images/plants/ginger.jpg
+    - assets/images/plants/mango.jpg
+    - assets/images/plants/neem.jpg
+    - assets/images/icons/leaf_icon.jpg
+    - assets/images/icons/flower_icon.jpg
+    - assets/images/icons/fruit_icon.jpg
+    - assets/images/icons/stem_icon.jpg
+    - assets/images/icons/root_icon.jpg
