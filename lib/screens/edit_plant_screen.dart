@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:final65120479/screens/land_use_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:final65120479/screens/land_use_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
@@ -66,6 +66,8 @@ class _EditPlantScreenState extends State<EditPlantScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Plant'),
+        centerTitle: true,
+        backgroundColor: Colors.green,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -77,49 +79,67 @@ class _EditPlantScreenState extends State<EditPlantScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        'Edit Plant Details',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Plant Name',
                           border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Colors.grey[100],
                         ),
                         validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _scientificNameController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Scientific Name',
                           border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Colors.grey[100],
                         ),
                         validator: (value) => value!.isEmpty ? 'Please enter a scientific name' : null,
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _getImage,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                         child: const Text('Change Image'),
                       ),
+                      const SizedBox(height: 16),
                       if (_image != null)
-                        Image.file(_image!, height: 100, width: 100, fit: BoxFit.cover),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(_image!, height: 100, width: 100, fit: BoxFit.cover),
+                        ),
                       const SizedBox(height: 16),
                       const Text('Land Uses:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
                       ..._landUses.map((landUse) => LandUseEditTile(
-                        landUse: landUse,
-                        onUpdate: (updatedLandUse) {
-                          setState(() {
-                            final index = _landUses.indexWhere((lu) => lu.landUseID == updatedLandUse.landUseID);
-                            if (index != -1) {
-                              _landUses[index] = updatedLandUse;
-                            }
-                          });
-                        },
-                        onDelete: () async {
-                          await DatabaseHelper().deleteLandUse(landUse.landUseID);
-                          setState(() {
-                            _landUses.removeWhere((lu) => lu.landUseID == landUse.landUseID);
-                          });
-                        },
-                      )),
+                            landUse: landUse,
+                            onUpdate: (updatedLandUse) {
+                              setState(() {
+                                final index = _landUses.indexWhere((lu) => lu.landUseID == updatedLandUse.landUseID);
+                                if (index != -1) {
+                                  _landUses[index] = updatedLandUse;
+                                }
+                              });
+                            },
+                            onDelete: () async {
+                              await DatabaseHelper().deleteLandUse(landUse.landUseID);
+                              setState(() {
+                                _landUses.removeWhere((lu) => lu.landUseID == landUse.landUseID);
+                              });
+                            },
+                          )),
                       ElevatedButton(
                         onPressed: () async {
                           final newLandUse = await Navigator.push(
@@ -134,11 +154,19 @@ class _EditPlantScreenState extends State<EditPlantScreen> {
                             });
                           }
                         },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                         child: const Text('Add New Land Use'),
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                         child: const Text('Update Plant'),
                       ),
                     ],
@@ -247,6 +275,10 @@ class _LandUseEditTileState extends State<LandUseEditTile> {
             ),
             ElevatedButton(
               onPressed: widget.onDelete,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
               child: const Text('Delete'),
             ),
           ],

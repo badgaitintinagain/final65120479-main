@@ -98,88 +98,91 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Random Plants',
-                    style: Theme.of(context).textTheme.headlineMedium,
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Text(
+                    'Suggestion Plants',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                ),
-                SizedBox(
-                  height: 150,
-                  child: FutureBuilder<List<Plant>>(
-                    future: _randomPlantsFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text('No plants available'));
-                      } else {
-                        return ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            final plant = snapshot.data![index];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PlantDetailScreen(plantId: plant.plantID),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 150,
+                    child: FutureBuilder<List<Plant>>(
+                      future: _randomPlantsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(child: Text('No plants available'));
+                        } else {
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              final plant = snapshot.data![index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PlantDetailScreen(plantId: plant.plantID),
+                                    ),
+                                  );
+                                },
+                                child: Card(
+                                  margin: const EdgeInsets.all(8.0),
+                                  elevation: 4, // Add slight shadow
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12), // Rounded corners
                                   ),
-                                );
-                              },
-                              child: Card(
-                                margin: const EdgeInsets.all(8.0),
-                                elevation: 5, // Add shadow to cards
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12), // Rounded corners
-                                ),
-                                child: SizedBox(
-                                  width: 120,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildImage(plant.plantImage),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          plant.plantName,
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                          overflow: TextOverflow.ellipsis,
+                                  child: SizedBox(
+                                    width: 120,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildImage(plant.plantImage),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            plant.plantName,
+                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    },
+                              );
+                            },
+                          );
+                        }
+                      },
+                    ),
                   ),
-                ),
-                ListTile(
-                  title: Text(
-                    'All Plants',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                  const SizedBox(height: 16),
+                  ListTile(
+                    title: Text(
+                      'All Plants',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(_showAllPlants ? Icons.expand_less : Icons.expand_more),
+                      onPressed: _toggleAllPlants,
+                    ),
                   ),
-                  trailing: IconButton(
-                    icon: Icon(_showAllPlants ? Icons.expand_less : Icons.expand_more),
-                    onPressed: _toggleAllPlants,
-                  ),
-                ),
-                if (_showAllPlants)
-                  Expanded(
-                    child: PlantsList(plantsFuture: _plantsFuture),
-                  ),
-              ],
+                  if (_showAllPlants)
+                    Expanded(
+                      child: PlantsList(plantsFuture: _plantsFuture),
+                    ),
+                ],
+              ),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -200,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
 class PlantsList extends StatelessWidget {
   final Future<List<Plant>> plantsFuture;
 
-  const PlantsList({Key? key, required this.plantsFuture}) : super(key: key);
+  const PlantsList({super.key, required this.plantsFuture});
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +234,7 @@ class PlantsList extends StatelessWidget {
 class PlantListTile extends StatelessWidget {
   final Plant plant;
 
-  const PlantListTile({Key? key, required this.plant}) : super(key: key);
+  const PlantListTile({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {

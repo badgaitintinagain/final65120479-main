@@ -1,9 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:final65120479/backbone/database_helper.dart';
 import 'package:final65120479/backbone/model.dart';
-import 'package:final65120479/screens/plant_detail_screen.dart'; // Import the plant detail screen
+import 'package:final65120479/screens/plant_detail_screen.dart';
 
 class SearchLandUseScreen extends StatefulWidget {
   const SearchLandUseScreen({Key? key}) : super(key: key);
@@ -54,7 +53,7 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                 future: _componentsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -63,12 +62,18 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                     return DropdownButtonFormField<int>(
                       decoration: const InputDecoration(labelText: 'Plant Component (optional)'),
                       value: _selectedComponentId,
-                      items: snapshot.data!.map((component) {
-                        return DropdownMenuItem<int>(
-                          value: component.componentID,
-                          child: Text(component.componentName),
-                        );
-                      }).toList(),
+                      items: [
+                        const DropdownMenuItem<int>(
+                          value: null,
+                          child: Text('No Choose'), // Default value
+                        ),
+                        ...snapshot.data!.map((component) {
+                          return DropdownMenuItem<int>(
+                            value: component.componentID,
+                            child: Text(component.componentName),
+                          );
+                        }),
+                      ],
                       onChanged: (value) {
                         setState(() {
                           _selectedComponentId = value;
@@ -83,7 +88,7 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                 future: _landUseTypesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -92,12 +97,18 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                     return DropdownButtonFormField<int>(
                       decoration: const InputDecoration(labelText: 'Land Use Type (optional)'),
                       value: _selectedLandUseTypeId,
-                      items: snapshot.data!.map((type) {
-                        return DropdownMenuItem<int>(
-                          value: type.landUseTypeID,
-                          child: Text(type.landUseTypeName),
-                        );
-                      }).toList(),
+                      items: [
+                        const DropdownMenuItem<int>(
+                          value: null,
+                          child: Text('No Choose'), // Default value
+                        ),
+                        ...snapshot.data!.map((type) {
+                          return DropdownMenuItem<int>(
+                            value: type.landUseTypeID,
+                            child: Text(type.landUseTypeName),
+                          );
+                        }),
+                      ],
                       onChanged: (value) {
                         setState(() {
                           _selectedLandUseTypeId = value;
@@ -117,7 +128,7 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                 future: _searchResultsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -132,7 +143,10 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
                           return ListTile(
                             leading: _buildImage(landUse.plantImage ?? ''), // Display image as icon
                             title: Text(landUse.plantName ?? 'Unknown'),
-                            subtitle: Text('Land use: ${landUse.landUseTypeName}\nComponent: ${landUse.componentName}\nDescription: ${landUse.landUseDescription}'),
+                            subtitle: Text(
+                              'Land use: ${landUse.landUseTypeName}\nComponent: ${landUse.componentName}\nDescription: ${landUse.landUseDescription}',
+                              style: const TextStyle(color: Color(0xFF54595D)),
+                            ),
                             onTap: () {
                               // Navigate to plant details when tapped
                               Navigator.push(
@@ -160,7 +174,7 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
     if (imagePath.startsWith('assets/')) {
       return Image.asset(
         imagePath,
-        height: 40, // Small icon size
+        height: 40,
         width: 40,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 40),
@@ -168,7 +182,7 @@ class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
     } else if (File(imagePath).existsSync()) {
       return Image.file(
         File(imagePath),
-        height: 40, // Small icon size
+        height: 40,
         width: 40,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 40),

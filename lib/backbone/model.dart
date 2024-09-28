@@ -54,12 +54,16 @@ class LandUse {
   final int componentID;
   final int landUseTypeID;
   final String landUseDescription;
-  final String? landUseTypeName; // เปลี่ยนเป็น nullable
-  final String? componentName; // เปลี่ยนเป็น nullable
-  final String? componentIcon; // เปลี่ยนเป็น nullable
-  final String? plantName; // เปลี่ยนเป็น nullable
-  final String? plantScientific; // เปลี่ยนเป็น nullable
-  final String? plantImage; // เปลี่ยนเป็น nullable
+
+  // Non-final properties
+  String? componentName;
+  String? landUseTypeName;
+  String? componentIcon;
+
+  // New properties for plant details
+  String? plantName;          
+  String? plantScientific;    
+  String? plantImage;         
 
   LandUse({
     required this.landUseID,
@@ -67,12 +71,12 @@ class LandUse {
     required this.componentID,
     required this.landUseTypeID,
     required this.landUseDescription,
-    this.landUseTypeName, // ไม่ต้องใส่ required
-    this.componentName, // ไม่ต้องใส่ required
-    this.componentIcon, // ไม่ต้องใส่ required
-    this.plantName, // ไม่ต้องใส่ required
-    this.plantScientific, // ไม่ต้องใส่ required
-    this.plantImage, // ไม่ต้องใส่ required
+    this.componentName,
+    this.landUseTypeName,
+    this.componentIcon,
+    this.plantName,
+    this.plantScientific,
+    this.plantImage,
   });
 
   LandUse copyWith({
@@ -81,12 +85,12 @@ class LandUse {
     int? componentID,
     int? landUseTypeID,
     String? landUseDescription,
-    String? landUseTypeName,
     String? componentName,
+    String? landUseTypeName,
     String? componentIcon,
-    String? plantName,           // Add plantName to copyWith
-    String? plantScientific,     // Add plantScientific to copyWith
-    String? plantImage,          // Add plantImage to copyWith
+    String? plantName,
+    String? plantScientific,
+    String? plantImage,
   }) {
     return LandUse(
       landUseID: landUseID ?? this.landUseID,
@@ -94,12 +98,12 @@ class LandUse {
       componentID: componentID ?? this.componentID,
       landUseTypeID: landUseTypeID ?? this.landUseTypeID,
       landUseDescription: landUseDescription ?? this.landUseDescription,
-      landUseTypeName: landUseTypeName ?? this.landUseTypeName,
       componentName: componentName ?? this.componentName,
+      landUseTypeName: landUseTypeName ?? this.landUseTypeName,
       componentIcon: componentIcon ?? this.componentIcon,
-      plantName: plantName ?? this.plantName,          // Copy plantName
-      plantScientific: plantScientific ?? this.plantScientific,  // Copy plantScientific
-      plantImage: plantImage ?? this.plantImage,       // Copy plantImage
+      plantName: plantName ?? this.plantName,
+      plantScientific: plantScientific ?? this.plantScientific,
+      plantImage: plantImage ?? this.plantImage,
     );
   }
 
@@ -110,12 +114,12 @@ class LandUse {
       'componentID': componentID,
       'landUseTypeID': landUseTypeID,
       'landUseDescription': landUseDescription,
-      'landUseTypeName': landUseTypeName,
       'componentName': componentName,
+      'landUseTypeName': landUseTypeName,
       'componentIcon': componentIcon,
-      'plantName': plantName,        // Include plantName in the map
-      'plantScientific': plantScientific,  // Include plantScientific in the map
-      'plantImage': plantImage,      // Include plantImage in the map
+      'plantName': plantName,
+      'plantScientific': plantScientific,
+      'plantImage': plantImage,
     };
   }
 }

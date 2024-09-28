@@ -13,7 +13,6 @@ class PlantDetailScreen extends StatefulWidget {
   _PlantDetailScreenState createState() => _PlantDetailScreenState();
 }
 
-
 class _PlantDetailScreenState extends State<PlantDetailScreen> {
   Plant _plant = Plant(plantID: 0, plantName: '', plantScientific: '', plantImage: '');
   late Future<List<LandUse>> _landUsesFuture = Future.value([]);
@@ -21,7 +20,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _landUsesFuture = Future.value([]); // Initialize with an empty list
+    _landUsesFuture = Future.value([]); 
     _loadPlant();
   }
 
@@ -114,13 +113,9 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
     try {
       final dbHelper = DatabaseHelper();
       await dbHelper.deletePlant(_plant.plantID);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_plant.plantName} has been deleted')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${_plant.plantName} has been deleted')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting plant: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting plant: $e')));
     }
   }
 }
@@ -143,12 +138,12 @@ class PlantDetailContent extends StatelessWidget {
             children: [
               Text(
                 plant.plantName,
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 plant.plantScientific,
-                style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic, color: Color(0xFF54595D)),
+                style: const TextStyle(fontSize: 20, fontStyle: FontStyle.italic, color: Color(0xFF54595D)),
               ),
             ],
           ),
@@ -169,10 +164,7 @@ class PlantImage extends StatelessWidget {
       width: double.infinity,
       height: 200,
       child: imagePath.startsWith('assets/')
-          ? Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-            )
+          ? Image.asset(imagePath, fit: BoxFit.cover)
           : Image.file(
               File(imagePath),
               fit: BoxFit.cover,
@@ -198,7 +190,7 @@ class LandUseSection extends StatelessWidget {
         children: [
           Text(
             'Land Uses',
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           FutureBuilder<List<LandUse>>(
