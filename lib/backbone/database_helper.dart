@@ -240,6 +240,30 @@ Future<int> insertPlant(Plant plant) async {
   );
 }
 
+  Future<void> updateLandUse(LandUse landUse) async {
+    final db = await database;
+    await db.update(
+      'LandUse',
+      {
+        'plantID': landUse.plantID,
+        'componentID': landUse.componentID,
+        'landUseTypeID': landUse.landUseTypeID,
+        'landUseDescription': landUse.landUseDescription,
+      },
+      where: 'landUseID = ?',
+      whereArgs: [landUse.landUseID],
+    );
+  }
+
+  Future<void> deleteLandUse(int landUseId) async {
+    final db = await database;
+    await db.delete(
+      'LandUse',
+      where: 'landUseID = ?',
+      whereArgs: [landUseId],
+    );
+  }
+
 Future<Plant> getPlantById(int plantId) async {
   final db = await database;
   final List<Map<String, dynamic>> maps = await db.query(
@@ -260,4 +284,15 @@ Future<Plant> getPlantById(int plantId) async {
   }
 }
 
+  Future<List<PlantComponent>> getPlantComponents() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('plantComponent');
+    return List.generate(maps.length, (i) {
+      return PlantComponent(
+        componentID: maps[i]['componentID'],
+        componentName: maps[i]['componentName'],
+        componentIcon: maps[i]['componentIcon'],
+      );
+    });
+  }
 }
