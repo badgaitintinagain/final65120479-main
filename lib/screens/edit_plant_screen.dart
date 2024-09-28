@@ -79,12 +79,19 @@ class _EditPlantScreenState extends State<EditPlantScreen> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Plant Name'),
+                        decoration: const InputDecoration(
+                          labelText: 'Plant Name',
+                          border: OutlineInputBorder(),
+                        ),
                         validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
                       ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _scientificNameController,
-                        decoration: const InputDecoration(labelText: 'Scientific Name'),
+                        decoration: const InputDecoration(
+                          labelText: 'Scientific Name',
+                          border: OutlineInputBorder(),
+                        ),
                         validator: (value) => value!.isEmpty ? 'Please enter a scientific name' : null,
                       ),
                       const SizedBox(height: 16),
@@ -144,6 +151,13 @@ class _EditPlantScreenState extends State<EditPlantScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_image == null && widget.plant.plantImage.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select an image')),
+        );
+        return;
+      }
+
       String imagePath = widget.plant.plantImage;
       if (_image != null && _image!.path != widget.plant.plantImage) {
         final directory = await getApplicationDocumentsDirectory();
@@ -163,7 +177,6 @@ class _EditPlantScreenState extends State<EditPlantScreen> {
       final dbHelper = DatabaseHelper();
       await dbHelper.updatePlant(updatedPlant);
 
-      // Update land uses
       for (var landUse in _landUses) {
         await dbHelper.updateLandUse(landUse);
       }
@@ -225,6 +238,9 @@ class _LandUseEditTileState extends State<LandUseEditTile> {
                   landUseTypeName: widget.landUse.landUseTypeName,
                   componentName: widget.landUse.componentName,
                   componentIcon: widget.landUse.componentIcon,
+                  plantName: widget.landUse.plantName,
+                  plantScientific: widget.landUse.plantScientific,
+                  plantImage: widget.landUse.plantImage,
                 );
                 widget.onUpdate(updatedLandUse);
               },

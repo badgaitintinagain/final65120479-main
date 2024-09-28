@@ -5,23 +5,32 @@ import 'package:final65120479/backbone/database_helper.dart';
 import 'package:final65120479/screens/edit_plant_screen.dart';
 
 class PlantDetailScreen extends StatefulWidget {
-  final Plant plant;
+  final int plantId;
 
-  const PlantDetailScreen({super.key, required this.plant});
+  const PlantDetailScreen({super.key, required this.plantId});
 
   @override
   _PlantDetailScreenState createState() => _PlantDetailScreenState();
 }
 
+
 class _PlantDetailScreenState extends State<PlantDetailScreen> {
-  late Plant _plant;
-  late Future<List<LandUse>> _landUsesFuture;
+  Plant _plant = Plant(plantID: 0, plantName: '', plantScientific: '', plantImage: '');
+  late Future<List<LandUse>> _landUsesFuture = Future.value([]);
 
   @override
   void initState() {
     super.initState();
-    _plant = widget.plant;
-    _loadLandUses();
+    _landUsesFuture = Future.value([]); // Initialize with an empty list
+    _loadPlant();
+  }
+
+  Future<void> _loadPlant() async {
+    final plant = await DatabaseHelper().getPlantById(widget.plantId);
+    setState(() {
+      _plant = plant;
+      _loadLandUses();
+    });
   }
 
   void _loadLandUses() {
@@ -230,7 +239,7 @@ class LandUseCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundImage: AssetImage(landUse.componentIcon),
+              backgroundImage: AssetImage(landUse.componentIcon ?? 'assets/default_icon.png'),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -238,7 +247,7 @@ class LandUseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    landUse.landUseTypeName,
+                    landUse.landUseTypeName ?? 'Unknown',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),

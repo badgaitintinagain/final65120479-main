@@ -4,6 +4,7 @@ import 'package:final65120479/backbone/database_helper.dart';
 import 'package:final65120479/backbone/model.dart';
 import 'package:final65120479/screens/plant_detail_screen.dart';
 import 'package:final65120479/screens/add_plant_screen.dart';
+import 'package:final65120479/screens/search_land_use_screen.dart'; 
 import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
@@ -25,29 +26,21 @@ class _HomeScreenState extends State<HomeScreen> {
     _initializeDatabase();
   }
 
- Future<void> _initializeDatabase() async {
+  Future<void> _initializeDatabase() async {
     final dbHelper = DatabaseHelper();
-    bool isDatabaseCreated = await dbHelper.isDatabaseCreated();
-
-    if (!isDatabaseCreated) {
-      // Database doesn't exist, create it
-      await dbHelper.initDatabase();
-    }
-
-    // Database is now ready, load plants
-    _refreshPlants();
+    await dbHelper.database; 
+    _refreshPlants(); 
   }
 
-  void _refreshPlants() {
+  void _refreshPlants() async {
     setState(() {
       _isLoading = true;
     });
     _plantsFuture = DatabaseHelper().getPlants();
     _randomPlantsFuture = _getRandomPlants();
-    _plantsFuture.then((_) {
-      setState(() {
-        _isLoading = false;
-      });
+    await _plantsFuture;
+    setState(() {
+      _isLoading = false;
     });
   }
 
@@ -64,11 +57,44 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Widget _buildImage(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      return Image.asset(
+        imagePath,
+        height: 80,
+        width: 120,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+      );
+    } else if (File(imagePath).existsSync()) {
+      return Image.file(
+        File(imagePath),
+        height: 80,
+        width: 120,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+      );
+    } else {
+      return const Icon(Icons.image_not_supported);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Plantipedia'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchLandUseScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -79,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     'Random Plants',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ),
                 SizedBox(
@@ -104,20 +130,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => PlantDetailScreen(plant: plant),
+                                    builder: (context) => PlantDetailScreen(plantId: plant.plantID),
                                   ),
                                 );
                               },
                               child: Card(
                                 margin: const EdgeInsets.all(8.0),
+                                elevation: 5, // Add shadow to cards
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12), // Rounded corners
+                                ),
                                 child: SizedBox(
                                   width: 120,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      plant.plantImage.startsWith('assets/')
-                                          ? Image.asset(plant.plantImage, height: 80, width: 120, fit: BoxFit.cover)
-                                          : Image.file(File(plant.plantImage), height: 80, width: 120, fit: BoxFit.cover),
+                                      _buildImage(plant.plantImage),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
@@ -140,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ListTile(
                   title: Text(
                     'All Plants',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   trailing: IconButton(
                     icon: Icon(_showAllPlants ? Icons.expand_less : Icons.expand_more),
@@ -169,13 +197,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// PlantsList and PlantListTile classes remain unchanged
-
-
 class PlantsList extends StatelessWidget {
   final Future<List<Plant>> plantsFuture;
 
-  const PlantsList({super.key, required this.plantsFuture});
+  const PlantsList({Key? key, required this.plantsFuture}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +231,7 @@ class PlantsList extends StatelessWidget {
 class PlantListTile extends StatelessWidget {
   final Plant plant;
 
-  const PlantListTile({super.key, required this.plant});
+  const PlantListTile({Key? key, required this.plant}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +249,7 @@ class PlantListTile extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PlantDetailScreen(plant: plant),
+            builder: (context) => PlantDetailScreen(plantId: plant.plantID),
           ),
         );
       },

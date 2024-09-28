@@ -54,9 +54,12 @@ class LandUse {
   final int componentID;
   final int landUseTypeID;
   final String landUseDescription;
-  final String landUseTypeName;
-  final String componentName;
-  final String componentIcon; 
+  final String? landUseTypeName; // เปลี่ยนเป็น nullable
+  final String? componentName; // เปลี่ยนเป็น nullable
+  final String? componentIcon; // เปลี่ยนเป็น nullable
+  final String? plantName; // เปลี่ยนเป็น nullable
+  final String? plantScientific; // เปลี่ยนเป็น nullable
+  final String? plantImage; // เปลี่ยนเป็น nullable
 
   LandUse({
     required this.landUseID,
@@ -64,10 +67,41 @@ class LandUse {
     required this.componentID,
     required this.landUseTypeID,
     required this.landUseDescription,
-    required this.landUseTypeName,
-    required this.componentName,
-    required this.componentIcon,
+    this.landUseTypeName, // ไม่ต้องใส่ required
+    this.componentName, // ไม่ต้องใส่ required
+    this.componentIcon, // ไม่ต้องใส่ required
+    this.plantName, // ไม่ต้องใส่ required
+    this.plantScientific, // ไม่ต้องใส่ required
+    this.plantImage, // ไม่ต้องใส่ required
   });
+
+  LandUse copyWith({
+    int? landUseID,
+    int? plantID,
+    int? componentID,
+    int? landUseTypeID,
+    String? landUseDescription,
+    String? landUseTypeName,
+    String? componentName,
+    String? componentIcon,
+    String? plantName,           // Add plantName to copyWith
+    String? plantScientific,     // Add plantScientific to copyWith
+    String? plantImage,          // Add plantImage to copyWith
+  }) {
+    return LandUse(
+      landUseID: landUseID ?? this.landUseID,
+      plantID: plantID ?? this.plantID,
+      componentID: componentID ?? this.componentID,
+      landUseTypeID: landUseTypeID ?? this.landUseTypeID,
+      landUseDescription: landUseDescription ?? this.landUseDescription,
+      landUseTypeName: landUseTypeName ?? this.landUseTypeName,
+      componentName: componentName ?? this.componentName,
+      componentIcon: componentIcon ?? this.componentIcon,
+      plantName: plantName ?? this.plantName,          // Copy plantName
+      plantScientific: plantScientific ?? this.plantScientific,  // Copy plantScientific
+      plantImage: plantImage ?? this.plantImage,       // Copy plantImage
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -78,7 +112,10 @@ class LandUse {
       'landUseDescription': landUseDescription,
       'landUseTypeName': landUseTypeName,
       'componentName': componentName,
-      'componentIcon': componentIcon, 
+      'componentIcon': componentIcon,
+      'plantName': plantName,        // Include plantName in the map
+      'plantScientific': plantScientific,  // Include plantScientific in the map
+      'plantImage': plantImage,      // Include plantImage in the map
     };
   }
 }

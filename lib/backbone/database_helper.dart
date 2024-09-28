@@ -15,7 +15,7 @@ class DatabaseHelper {
     return _database!;
   }
 
-   Future<Database> _initDatabase() async {
+  Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'plants.db');
     return await openDatabase(
       path,
@@ -23,24 +23,6 @@ class DatabaseHelper {
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
-  }
-
-  Future<bool> isDatabaseCreated() async {
-    try {
-      Database db = await database;
-      List<Map<String, dynamic>> tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
-      return tables.isNotEmpty;
-    } catch (e) {
-      print('Error checking database: $e');
-      return false;
-    }
-  }
-
-  Future<void> initDatabase() async {
-    if (!await isDatabaseCreated()) {
-      Database db = await database;
-      await _onCreate(db, 2);
-    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -84,7 +66,7 @@ class DatabaseHelper {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-   
+      // Perform upgrade logic if needed
     }
   }
 
@@ -136,6 +118,8 @@ class DatabaseHelper {
     });
   }
 
+  // RESTORE THESE METHODS
+
   Future<List<Plant>> getPlants() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('plant');
@@ -150,34 +134,37 @@ class DatabaseHelper {
   }
 
   Future<List<LandUse>> getLandUsesForPlant(int plantId) async {
-  final db = await database;
-  final List<Map<String, dynamic>> maps = await db.rawQuery('''
-    SELECT 
-      LandUse.*,
-      LandUseType.landUseTypeName,
-      plantComponent.componentName,
-      plantComponent.componentIcon
-    FROM LandUse
-    JOIN LandUseType ON LandUse.landUseTypeID = LandUseType.landUseTypeID
-    JOIN plantComponent ON LandUse.componentID = plantComponent.componentID
-    WHERE LandUse.plantID = ?
-  ''', [plantId]);
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT 
+        LandUse.*,
+        LandUseType.landUseTypeName,
+        plantComponent.componentName,
+        plantComponent.componentIcon
+      FROM LandUse
+      JOIN LandUseType ON LandUse.landUseTypeID = LandUseType.landUseTypeID
+      JOIN plantComponent ON LandUse.componentID = plantComponent.componentID
+      WHERE LandUse.plantID = ?
+    ''', [plantId]);
 
-  return List.generate(maps.length, (i) {
-    return LandUse(
-      landUseID: maps[i]['landUseID'],
-      plantID: maps[i]['plantID'],
-      componentID: maps[i]['componentID'],
-      landUseTypeID: maps[i]['landUseTypeID'],
-      landUseDescription: maps[i]['landUseDescription'],
-      landUseTypeName: maps[i]['landUseTypeName'],
-      componentName: maps[i]['componentName'],
-      componentIcon: maps[i]['componentIcon'], // Add this line
-    );
-  });
-}
+    return List.generate(maps.length, (i) {
+      return LandUse(
+        landUseID: maps[i]['landUseID'],
+        plantID: maps[i]['plantID'],
+        componentID: maps[i]['componentID'],
+        landUseTypeID: maps[i]['landUseTypeID'],
+        landUseDescription: maps[i]['landUseDescription'],
+        landUseTypeName: maps[i]['landUseTypeName'],
+        componentName: maps[i]['componentName'],
+        componentIcon: maps[i]['componentIcon'],
+        plantName: maps[i]['plantName'],
+        plantScientific: maps[i]['plantScientific'],
+        plantImage: maps[i]['plantImage'],
+      );
+    });
+  }
 
-    Future<List<LandUseType>> getLandUseTypes() async {
+  Future<List<LandUseType>> getLandUseTypes() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('LandUseType');
     return List.generate(maps.length, (i) {
@@ -189,14 +176,14 @@ class DatabaseHelper {
     });
   }
 
-Future<int> insertPlant(Plant plant) async {
-  final db = await database;
-  return await db.insert(
-    'plant',
-    plant.toMap()..remove('plantID'),  // Remove plantID to let SQLite auto-increment
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
-}
+  Future<int> insertPlant(Plant plant) async {
+    final db = await database;
+    return await db.insert(
+      'plant',
+      plant.toMap()..remove('plantID'),  // Remove plantID to let SQLite auto-increment
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 
   Future<int> insertLandUse(LandUse landUse) async {
     final db = await database;
@@ -212,16 +199,14 @@ Future<int> insertPlant(Plant plant) async {
     );
   }
 
-   Future<void> deletePlant(int plantId) async {
+  Future<void> deletePlant(int plantId) async {
     final db = await database;
     await db.transaction((txn) async {
-      // Delete related land uses first
       await txn.delete(
         'LandUse',
         where: 'plantID = ?',
         whereArgs: [plantId],
       );
-      // Then delete the plant
       await txn.delete(
         'plant',
         where: 'plantID = ?',
@@ -231,14 +216,14 @@ Future<int> insertPlant(Plant plant) async {
   }
 
   Future<void> updatePlant(Plant plant) async {
-  final db = await database;
-  await db.update(
-    'plant',
-    plant.toMap(),
-    where: 'plantID = ?',
-    whereArgs: [plant.plantID],
-  );
-}
+    final db = await database;
+    await db.update(
+      'plant',
+      plant.toMap(),
+      where: 'plantID = ?',
+      whereArgs: [plant.plantID],
+    );
+  }
 
   Future<void> updateLandUse(LandUse landUse) async {
     final db = await database;
@@ -264,25 +249,25 @@ Future<int> insertPlant(Plant plant) async {
     );
   }
 
-Future<Plant> getPlantById(int plantId) async {
-  final db = await database;
-  final List<Map<String, dynamic>> maps = await db.query(
-    'plant',
-    where: 'plantID = ?',
-    whereArgs: [plantId],
-  );
-
-  if (maps.isNotEmpty) {
-    return Plant(
-      plantID: maps[0]['plantID'],
-      plantName: maps[0]['plantName'],
-      plantScientific: maps[0]['plantScientific'],
-      plantImage: maps[0]['plantImage'],
+  Future<Plant> getPlantById(int plantId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'plant',
+      where: 'plantID = ?',
+      whereArgs: [plantId],
     );
-  } else {
-    throw Exception('Plant not found');
+
+    if (maps.isNotEmpty) {
+      return Plant(
+        plantID: maps[0]['plantID'],
+        plantName: maps[0]['plantName'],
+        plantScientific: maps[0]['plantScientific'],
+        plantImage: maps[0]['plantImage'],
+      );
+    } else {
+      throw Exception('Plant not found');
+    }
   }
-}
 
   Future<List<PlantComponent>> getPlantComponents() async {
     final db = await database;
@@ -292,6 +277,66 @@ Future<Plant> getPlantById(int plantId) async {
         componentID: maps[i]['componentID'],
         componentName: maps[i]['componentName'],
         componentIcon: maps[i]['componentIcon'],
+      );
+    });
+  }
+
+  Future<List<LandUse>> searchLandUses({
+    String? plantName,
+    int? componentID,
+    int? landUseTypeID,
+  }) async {
+    final db = await database;
+
+    String whereClause = '';
+    List<dynamic> whereArgs = [];
+
+    if (plantName != null && plantName.isNotEmpty) {
+      whereClause += 'plant.plantName LIKE ?';
+      whereArgs.add('%$plantName%');
+    }
+
+    if (componentID != null) {
+      if (whereClause.isNotEmpty) whereClause += ' AND ';
+      whereClause += 'LandUse.componentID = ?';
+      whereArgs.add(componentID);
+    }
+
+    if (landUseTypeID != null) {
+      if (whereClause.isNotEmpty) whereClause += ' AND ';
+      whereClause += 'LandUse.landUseTypeID = ?';
+      whereArgs.add(landUseTypeID);
+    }
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT 
+        LandUse.*,
+        plant.plantName,
+        plant.plantScientific,
+        plant.plantImage,
+        LandUseType.landUseTypeName,
+        plantComponent.componentName,
+        plantComponent.componentIcon
+      FROM LandUse
+      JOIN plant ON LandUse.plantID = plant.plantID
+      JOIN LandUseType ON LandUse.landUseTypeID = LandUseType.landUseTypeID
+      JOIN plantComponent ON LandUse.componentID = plantComponent.componentID
+      ${whereClause.isNotEmpty ? 'WHERE $whereClause' : ''}
+    ''', whereArgs);
+
+    return List.generate(maps.length, (i) {
+      return LandUse(
+        landUseID: maps[i]['landUseID'],
+        plantID: maps[i]['plantID'],
+        componentID: maps[i]['componentID'],
+        landUseTypeID: maps[i]['landUseTypeID'],
+        landUseDescription: maps[i]['landUseDescription'],
+        landUseTypeName: maps[i]['landUseTypeName'],
+        componentName: maps[i]['componentName'],
+        componentIcon: maps[i]['componentIcon'],
+        plantName: maps[i]['plantName'],
+        plantScientific: maps[i]['plantScientific'],
+        plantImage: maps[i]['plantImage'],
       );
     });
   }

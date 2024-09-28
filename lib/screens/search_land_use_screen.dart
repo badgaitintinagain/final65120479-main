@@ -1,44 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:final65120479/backbone/database_helper.dart';
 import 'package:final65120479/backbone/model.dart';
+import 'package:final65120479/screens/plant_detail_screen.dart'; // Import the plant detail screen
 
-class AddLandUseScreen extends StatefulWidget {
-  final int plantId;
-
-  const AddLandUseScreen({Key? key, required this.plantId}) : super(key: key);
+class SearchLandUseScreen extends StatefulWidget {
+  const SearchLandUseScreen({Key? key}) : super(key: key);
 
   @override
-  _AddLandUseScreenState createState() => _AddLandUseScreenState();
+  _SearchLandUseScreenState createState() => _SearchLandUseScreenState();
 }
 
-class _AddLandUseScreenState extends State<AddLandUseScreen> {
+class _SearchLandUseScreenState extends State<SearchLandUseScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _descriptionController = TextEditingController();
-
+  String? _plantName;
   int? _selectedComponentId;
   int? _selectedLandUseTypeId;
 
   late Future<List<PlantComponent>> _componentsFuture;
   late Future<List<LandUseType>> _landUseTypesFuture;
+  late Future<List<LandUse>> _searchResultsFuture;
 
   @override
   void initState() {
     super.initState();
     _componentsFuture = DatabaseHelper().getPlantComponents();
     _landUseTypesFuture = DatabaseHelper().getLandUseTypes();
-  }
-
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    super.dispose();
+    _searchResultsFuture = Future.value([]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Land Use'),
+        title: const Text('Search Land Use'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -47,7 +41,13 @@ class _AddLandUseScreenState extends State<AddLandUseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Dropdown for selecting Plant Components
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Plant Name (optional)'),
+                onChanged: (value) {
+                  _plantName = value.isNotEmpty ? value : null; // Allow empty input
+                },
+              ),
+              const SizedBox(height: 16),
               FutureBuilder<List<PlantComponent>>(
                 future: _componentsFuture,
                 builder: (context, snapshot) {
@@ -59,7 +59,7 @@ class _AddLandUseScreenState extends State<AddLandUseScreen> {
                     return const Text('No plant components available');
                   } else {
                     return DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(labelText: 'Plant Component'),
+                      decoration: const InputDecoration(labelText: 'Plant Component (optional)'),
                       value: _selectedComponentId,
                       items: snapshot.data!.map((component) {
                         return DropdownMenuItem<int>(
@@ -72,14 +72,11 @@ class _AddLandUseScreenState extends State<AddLandUseScreen> {
                           _selectedComponentId = value;
                         });
                       },
-                      validator: (value) => value == null ? 'Please select a component' : null,
                     );
                   }
                 },
               ),
               const SizedBox(height: 16),
-
-              // Dropdown for selecting Land Use Types
               FutureBuilder<List<LandUseType>>(
                 future: _landUseTypesFuture,
                 builder: (context, snapshot) {
@@ -91,7 +88,7 @@ class _AddLandUseScreenState extends State<AddLandUseScreen> {
                     return const Text('No land use types available');
                   } else {
                     return DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(labelText: 'Land Use Type'),
+                      decoration: const InputDecoration(labelText: 'Land Use Type (optional)'),
                       value: _selectedLandUseTypeId,
                       items: snapshot.data!.map((type) {
                         return DropdownMenuItem<int>(
@@ -104,34 +101,50 @@ class _AddLandUseScreenState extends State<AddLandUseScreen> {
                           _selectedLandUseTypeId = value;
                         });
                       },
-                      validator: (value) => value == null ? 'Please select a land use type' : null,
                     );
                   }
                 },
               ),
-              const SizedBox(height: 16),
-
-              // Text field for description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-              ),
               const SizedBox(height: 24),
-
-              // Button to submit the form
               ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Add Land Use'),
+                onPressed: _submitSearch,
+                child: const Text('Search'),
+              ),
+              const SizedBox(height: 16),
+              FutureBuilder<List<LandUse>>(
+                future: _searchResultsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No results found'));
+                  } else {
+                    return Expanded(
+                      child: ListView.separated(
+                        itemCount: snapshot.data!.length,
+                        separatorBuilder: (context, index) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final landUse = snapshot.data![index];
+                          return ListTile(
+                            title: Text(landUse.landUseTypeName ?? 'Unknown'),
+                            subtitle: Text('Component: ${landUse.componentName}\nDescription: ${landUse.landUseDescription}'),
+                            onTap: () {
+                              // Navigate to plant details when tapped
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PlantDetailScreen(plantId: landUse.plantID),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -140,34 +153,14 @@ class _AddLandUseScreenState extends State<AddLandUseScreen> {
     );
   }
 
-  Future<void> _submitForm() async {
-  if (_formKey.currentState!.validate()) {
-    final landUse = LandUse(
-      landUseID: 0, // This will be auto-generated by SQLite
-      plantID: widget.plantId,
-      componentID: _selectedComponentId!,
-      landUseTypeID: _selectedLandUseTypeId!,
-      landUseDescription: _descriptionController.text,
-      landUseTypeName: '', // This will be filled by the database query
-      componentName: '', // This will be filled by the database query
-      componentIcon: '', // This will be filled by the database query
-    );
-
-    try {
-      final dbHelper = DatabaseHelper();
-      await dbHelper.insertLandUse(landUse);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Land use added successfully')),
+  Future<void> _submitSearch() async {
+    if (_formKey.currentState!.validate()) {
+      _searchResultsFuture = DatabaseHelper().searchLandUses(
+        plantName: _plantName,
+        componentID: _selectedComponentId,
+        landUseTypeID: _selectedLandUseTypeId,
       );
-
-      Navigator.pop(context, landUse); // Pass back the new land use
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding land use: $e')),
-      );
+      setState(() {}); // Refresh the UI to show search results
     }
   }
-}
-
 }

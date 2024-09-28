@@ -16,16 +16,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Plantipedia',
       theme: ThemeData(
-        primaryColor: Colors.white,
-        scaffoldBackgroundColor: Colors.white,
+        primaryColor: const Color(0xFF3366CC), // Primary color
+        scaffoldBackgroundColor: const Color(0xFFF7F8FA), // Light background
         appBarTheme: const AppBarTheme(
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          color: Colors.white,
-          elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xFF202122)),
+          color: Color(0xFF3366CC), // Change app bar color
+          elevation: 2, // Slight shadow for app bar
+          iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
-            color: Color(0xFF202122),
-            fontSize: 18,
+            color: Colors.white,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -43,6 +43,11 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3366CC),
             foregroundColor: Colors.white,
+            elevation: 5, // Add shadow to buttons
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12), // Rounded corners
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
           ),
         ),
       ),

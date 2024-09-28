@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:final65120479/screens/land_use_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +19,7 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
   final _nameController = TextEditingController();
   final _scientificNameController = TextEditingController();
   File? _image;
-  final List<int> _selectedLandUses = [];
+  List<LandUse> _landUses = [];
 
   @override
   void dispose() {
@@ -82,42 +83,33 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _getImage,
-                  child: const Text('Select Image (Optional)'),
+                  child: const Text('Select Image'),
                 ),
                 if (_image != null)
                   Image.file(_image!, height: 100, width: 100, fit: BoxFit.cover),
                 const SizedBox(height: 16),
-                const Text('Select Land Uses:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                FutureBuilder<List<LandUseType>>(
-                  future: DatabaseHelper().getLandUseTypes(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text('No land use types available');
-                    } else {
-                      return Column(
-                        children: snapshot.data!.map((landUseType) {
-                          return CheckboxListTile(
-                            title: Text(landUseType.landUseTypeName),
-                            value: _selectedLandUses.contains(landUseType.landUseTypeID),
-                            onChanged: (bool? value) {
-                              setState(() {
-                                if (value == true) {
-                                  _selectedLandUses.add(landUseType.landUseTypeID);
-                                } else {
-                                  _selectedLandUses.remove(landUseType.landUseTypeID);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
-                      );
+                ElevatedButton(
+                  onPressed: () async {
+                    final newLandUse = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddLandUseScreen(plantId: 0)),
+                    );
+                    if (newLandUse != null && newLandUse is LandUse) {
+                      setState(() {
+                        _landUses.add(newLandUse); // Immediately add the new land use
+                      });
                     }
                   },
+                  child: const Text('Add New Land Use'),
                 ),
+                const SizedBox(height: 16),
+                // Display added land uses
+                const Text('Added Land Uses:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                ..._landUses.map((landUse) => ListTile(
+                  title: Text(landUse.landUseTypeName ?? 'Unknown'),
+                  subtitle: Text('Description: ${landUse.landUseDescription}'),
+                )),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _submitForm,
@@ -132,55 +124,49 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
   }
 
   Future<void> _submitForm() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      String imagePath = '';
-      if (_image != null) {
+    if (_formKey.currentState!.validate()) {
+      if (_image == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select an image')),
+        );
+        return;
+      }
+
+      try {
         final directory = await getApplicationDocumentsDirectory();
         final String fileName = path.basename(_image!.path);
         final String newPath = path.join(directory.path, fileName);
         await _image!.copy(newPath);
-        imagePath = newPath;
-      }
 
-      final newPlant = Plant(
-        plantID: 0,  // Set to 0 to let SQLite auto-increment
-        plantName: _nameController.text,
-        plantScientific: _scientificNameController.text,
-        plantImage: imagePath,
-      );
-
-      final dbHelper = DatabaseHelper();
-      final plantId = await dbHelper.insertPlant(newPlant);
-
-      if (plantId > 0) {
-        // Plant was successfully added, now add the land uses
-        for (int landUseTypeId in _selectedLandUses) {
-          final landUse = LandUse(
-            landUseID: 0,  // Set to 0 to let SQLite auto-increment
-            plantID: plantId,
-            componentID: 1101,  // You might want to allow selecting components as well
-            landUseTypeID: landUseTypeId,
-            landUseDescription: 'Default description',  // You might want to allow adding descriptions
-            landUseTypeName: '',  // This will be filled by the database query
-            componentName: '',  // This will be filled by the database query
-            componentIcon: '',  // This will be filled by the database query
-          );
-          await dbHelper.insertLandUse(landUse);
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Plant and land uses added successfully')),
+        final newPlant = Plant(
+          plantID: 0,
+          plantName: _nameController.text,
+          plantScientific: _scientificNameController.text,
+          plantImage: newPath,
         );
-        Navigator.pop(context, true);
-      } else {
-        throw Exception('Failed to insert plant');
+
+        final dbHelper = DatabaseHelper();
+        final plantId = await dbHelper.insertPlant(newPlant);
+
+        if (plantId > 0) {
+          for (var landUse in _landUses) {
+            final newLandUse = landUse.copyWith(plantID: plantId);
+            await dbHelper.insertLandUse(newLandUse);
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Plant and land uses added successfully')),
+          );
+          Navigator.pop(context, true);
+        } else {
+          throw Exception('Failed to insert plant');
+        }
+      } catch (e) {
+        print('Error adding plant: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding plant: $e')),
+        );
       }
-    } catch (e) {
-      print('Error adding plant: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding plant: $e')),
-      );
     }
   }
-}}
+}
